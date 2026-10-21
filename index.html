@@ -64,7 +64,7 @@ REP=["A. Novak","B. Okafor","C. Lindqvist","D. Moreau","E. Tanaka","F. Alvarez"]
 let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647,pick=a=>a[Math.floor(rnd()*a.length)];
 let S={page:"exec",per:12,reg:"All",rows:[],src:"demo",err:""};
 const adapt=d=>d.rows.map(x=>({...x,m:x.date.slice(0,7)}));
-function load(){$("#view").innerHTML='<div class="card">Loading data…</div>';fetch("/api/transactions").then(r=>r.json()).then(d=>{S.rows=adapt(d);S.src="demo";S.err="";S.reg="All";render()}).catch(()=>{S.err="Cannot reach the API. Start the backend with: uvicorn app:app";render()})}
+function load(){$("#view").innerHTML='<div class="card">Loading data…</div>';fetch("/api/transactions").then(r=>r.json()).then(d=>{S.rows=adapt(d);S.src="demo";S.err="";S.reg="All";render()}).catch(()=>{S.err=location.protocol=="file:"?"This page was opened as a file. Start the backend (uvicorn app:app) and open http://localhost:8000 instead.":"Cannot reach the API at /api/transactions. Check that the backend is running.";render()})}
 const sum=(a,f)=>a.reduce((s,x)=>s+f(x),0),by=(a,f)=>{const o={};a.forEach(x=>{(o[f(x)]??=[]).push(x)});return o};
 const $$=n=>n>=1e6?"$"+(n/1e6).toFixed(2)+"M":n>=1e3?"$"+(n/1e3).toFixed(0)+"K":"$"+Math.round(n);
 const pc=n=>(n*100).toFixed(1)+"%";
@@ -113,7 +113,7 @@ document.querySelectorAll("aside button[data-p]").forEach(b=>b.classList.toggle(
 $("#src").innerHTML=(S.src=="demo"?"<b>Demo mode:</b> all figures are synthetic and for illustration only. No live Salesforce or SAP connection.":"<b>Imported file:</b> "+esc(S.src)+". Not a live connection.")+(S.err?`<div class="err">${esc(S.err)}</div>`:"");
 const regs=[...new Set(S.rows.map(r=>r.region))].sort();$("#reg").innerHTML=["All",...regs].map(r=>`<option ${r==S.reg?"selected":""} value="${esc(r)}">${r=="All"?"All regions":esc(r)}</option>`).join("");
 if(S.page=="conn")return conn();
-const x=calc();if(!x.C.length){$("#view").innerHTML='<div class="card">No data for this selection. Change the period or region, or import a CSV.</div>';return}
+const x=calc();if(!x.C.length){$("#view").innerHTML=S.rows.length?'<div class="card">No data for this selection. Change the period or region, or import a CSV.</div>':'<div class="card">No data loaded. '+(S.err?esc(S.err):"The API returned no rows.")+'</div>';return}
 S.page=="exec"?exec(x):sales(x)}
 document.querySelectorAll("aside button[data-p]").forEach(b=>b.onclick=()=>{S.page=b.dataset.p;render()});
 $("#per").onchange=e=>{S.per=+e.target.value;render()};$("#reg").onchange=e=>{S.reg=e.target.value;render()};
