@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Unified Sales &amp; Finance Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--bg:#f3f6fb;--card:#fff;--ink:#0f1f3d;--mute:#5a6a85;--line:#dde4ef;--nav:#0b1b3a;--acc:#2f6fed;--acc2:#8fb4ff;--good:#0f8a5f;--bad:#c23b3b;--warn:#b7791f;--ch:#0f1f3d}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a1226;--card:#111d38;--ink:#e8eefb;--mute:#9bacc9;--line:#22345a;--nav:#071022;--acc:#5b94ff;--acc2:#2c4f94;--good:#3ecf9a;--bad:#ff7b7b;--warn:#e6b052;--ch:#e8eefb}}
+:root[data-theme="dark"]{--bg:#0a1226;--card:#111d38;--ink:#e8eefb;--mute:#9bacc9;--line:#22345a;--nav:#071022;--acc:#5b94ff;--acc2:#2c4f94;--good:#3ecf9a;--bad:#ff7b7b;--warn:#e6b052;--ch:#e8eefb}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 "IBM Plex Sans",system-ui,sans-serif;display:flex;min-height:100vh}
+aside{width:220px;background:var(--nav);color:#cfdaf2;padding:18px 12px;flex-shrink:0}
+aside h1{font-size:15px;color:#fff;margin:0 8px 18px;line-height:1.3}
+aside button{display:block;width:100%;text-align:left;background:none;border:0;color:inherit;padding:9px 10px;border-radius:6px;font:inherit;cursor:pointer}
+aside button:hover,aside button.on{background:#1b3263;color:#fff}
+aside button:focus-visible,select:focus-visible,label:focus-within{outline:2px solid var(--acc2);outline-offset:2px}
+aside button[disabled]{opacity:.5;cursor:default}
+aside small{display:block;margin:14px 10px 4px;color:#8ea2c9}
+main{flex:1;min-width:0;padding:18px 22px 40px}
+.top{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
+.top h2{margin:0;font-size:20px;flex:1 1 200px}
+select,.btn{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:7px 10px;font:inherit}
+.btn{cursor:pointer}
+.banner{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--warn);padding:8px 12px;border-radius:6px;margin-bottom:14px;color:var(--mute);font-size:13px}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(12,1fr);margin-bottom:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px;min-width:0}
+.k{grid-column:span 2}.c4{grid-column:span 4}.c6{grid-column:span 6}.c8{grid-column:span 8}.c12{grid-column:span 12}
+.k .l{color:var(--mute);font-size:12px}.k .v{font-size:24px;font-weight:600;margin:2px 0}
+.d{font-size:12px}.up{color:var(--good)}.dn{color:var(--bad)}
+.card h3{margin:0 0 8px;font-size:14px}
+.cv{position:relative;height:240px}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:6px 4px;border-bottom:1px solid var(--line)}td.n,th.n{text-align:right}
+.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden}.bar i{display:block;height:100%;background:var(--acc)}
+.pill{display:inline-block;padding:2px 8px;border-radius:10px;font-size:12px;border:1px solid var(--line)}
+details{margin-top:12px;color:var(--mute);font-size:13px}details p{margin:4px 0}
+.err{color:var(--bad);font-size:13px}
+@media(max-width:1000px){.k{grid-column:span 4}.c4,.c6,.c8{grid-column:span 12}}
+@media(max-width:800px){body{flex-direction:column}aside{width:100%;display:flex;gap:4px;overflow-x:auto;padding:10px}aside h1,aside small{display:none}aside button{width:auto;white-space:nowrap}main{padding:14px 12px 40px}.k{grid-column:span 6}}
+</style></head><body>
+<aside><h1>Sales &amp; Finance<br>Intelligence</h1>
+<button data-p="exec" class="on">Executive overview</button>
+<button data-p="sales">Salesforce sales analytics</button>
+<button data-p="conn">Data connections</button>
+<small>Next phase</small>
+<button disabled>SAP finance analytics</button><button disabled>Operations &amp; inventory</button><button disabled>Detailed analysis</button>
+</aside>
+<main>
+<div class="top"><h2 id="title"></h2>
+<select id="per" aria-label="Period"><option value="3">Last 3 months</option><option value="6">Last 6 months</option><option value="12" selected>Last 12 months</option></select>
+<select id="reg" aria-label="Region"></select>
+<label class="btn">Import CSV<input id="csv" type="file" accept=".csv" hidden></label>
+<button class="btn" id="reset">Reset demo data</button></div>
+<div class="banner" id="src"></div>
+<div id="view"></div>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+const REG=["EMEA","North America","APAC","LATAM"],PRO=["Core Platform","Analytics Add-on","Support Plan","Services"],
+CUS=["Northwind","Acme Retail","Helix Bio","Orion Freight","Blue Harbor","Kestrel Energy","Vantage Foods","Lumen Health","Pioneer Auto","Summit Textiles"],
+REP=["A. Novak","B. Okafor","C. Lindqvist","D. Moreau","E. Tanaka","F. Alvarez"],PAL=["#2f6fed","#8fb4ff","#0f1f3d","#5aa0a8","#b7791f","#7a8fb8"];
+let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647,pick=a=>a[Math.floor(rnd()*a.length)];
+let S={page:"exec",per:12,reg:"All",rows:[],src:"demo",err:""};
+const adapt=d=>d.rows.map(x=>({...x,m:x.date.slice(0,7)}));
+function load(){$("#view").innerHTML='<div class="card">Loading data…</div>';fetch("/api/transactions").then(r=>r.json()).then(d=>{S.rows=adapt(d);S.src="demo";S.err="";S.reg="All";render()}).catch(()=>{S.err="Cannot reach the API. Start the backend with: uvicorn app:app";render()})}
+const sum=(a,f)=>a.reduce((s,x)=>s+f(x),0),by=(a,f)=>{const o={};a.forEach(x=>{(o[f(x)]??=[]).push(x)});return o};
+const $$=n=>n>=1e6?"$"+(n/1e6).toFixed(2)+"M":n>=1e3?"$"+(n/1e3).toFixed(0)+"K":"$"+Math.round(n);
+const pc=n=>(n*100).toFixed(1)+"%";
+let charts=[];const tc=()=>getComputedStyle(document.documentElement).getPropertyValue("--ch").trim()||"#0f1f3d";
+function chart(id,cfg){const c=$("#"+id);if(!c)return;Chart.defaults.color=tc();Chart.defaults.font.family='"IBM Plex Sans",sans-serif';
+cfg.options={responsive:true,maintainAspectRatio:false,...cfg.options};charts.push(new Chart(c,cfg))}
+function kpi(l,v,cur,prev,inv){let d="";if(prev!=null&&prev!==0){const x=cur/prev-1,good=inv?x<0:x>=0;d=`<div class="d ${good?"up":"dn"}">${x>=0?"▲":"▼"} ${Math.abs(x*100).toFixed(1)}% vs prior period</div>`}return `<div class="card k"><div class="l">${l}</div><div class="v">${v}</div>${d}</div>`}
+function calc(){const all=S.rows,ms=[...new Set(all.map(r=>r.m))].sort(),n=Math.min(S.per,ms.length),cur=ms.slice(-n),prv=ms.slice(-2*n,-n);
+const f=r=>S.reg=="All"||r.region==S.reg,C=all.filter(r=>cur.includes(r.m)&&f(r)),P=all.filter(r=>prv.includes(r.m)&&f(r));
+const base=all.filter(f),mean=sum(base,r=>r.revenue)/(ms.length||1),
+tgt=m=>mean*1.04,bud=m=>mean*(.97+.012*ms.indexOf(m));
+return{ms,cur,C,P,mean,tgt,bud,rev:sum(C,r=>r.revenue),gp:sum(C,r=>r.revenue-r.cogs),prev:sum(P,r=>r.revenue),pgp:sum(P,r=>r.revenue-r.cogs)}}
+function exec(x){const{C,cur,rev,gp,prev,pgp}=x,mg=rev?gp/rev:0,pmg=prev?pgp/prev:0,tg=x.tgt()*cur.length,ar=rev/cur.length*3*.55,od=ar*.34;
+const mon=by(C,r=>r.m),pipe=pipeline(x);
+$("#view").innerHTML=`<div class="grid">${kpi("Booked revenue",$$(rev),rev,prev)}${kpi("Gross profit",$$(gp),gp,pgp)}${kpi("Gross margin",pc(mg),mg,pmg)}
+${kpi("Target achievement",pc(rev/tg),rev/tg,null)}${kpi("Open receivables",$$(ar),ar,null)}${kpi("Overdue invoices",$$(od),od,null,1)}</div>
+<div class="grid"><div class="card c8"><h3>Monthly revenue vs budget</h3><div class="cv"><canvas id="a"></canvas></div></div>
+<div class="card c4"><h3>Revenue by region</h3><div class="cv"><canvas id="b"></canvas></div></div>
+<div class="card c6"><h3>Open pipeline by stage (not booked revenue)</h3><div class="cv"><canvas id="c"></canvas></div></div>
+<div class="card c6"><h3>Receivables aging</h3><div class="cv"><canvas id="d"></canvas></div></div></div>
+<details><summary>Metric definitions</summary><p><b>Booked revenue</b> = sum of closed-won transaction revenue in the period. <b>Gross profit</b> = revenue − COGS. <b>Gross margin</b> = gross profit ÷ revenue. <b>Target achievement</b> = booked revenue ÷ (monthly target × months). <b>Budget and target</b> in this demo are derived from historical averages. <b>Receivables and aging</b> are modelled demo figures; real values come from SAP open items. Pipeline is forecast, never added to booked revenue.</p></details>`;
+chart("a",{data:{labels:cur,datasets:[{type:"bar",label:"Actual",data:cur.map(m=>sum(mon[m]||[],r=>r.revenue)),backgroundColor:PAL[0]},{type:"line",label:"Budget",data:cur.map(x.bud),borderColor:PAL[4],tension:.3,pointRadius:2}]},options:{scales:{y:{ticks:{callback:$$}}}}});
+const rg=by(C,r=>r.region);chart("b",{type:"doughnut",data:{labels:Object.keys(rg),datasets:[{data:Object.values(rg).map(a=>sum(a,r=>r.revenue)),backgroundColor:PAL}]},options:{plugins:{legend:{position:"bottom"}}}});
+chart("c",{type:"bar",data:{labels:pipe.map(p=>p[0]),datasets:[{label:"Weighted value",data:pipe.map(p=>p[1]),backgroundColor:[PAL[1],PAL[0],PAL[3],PAL[2]]}]},options:{indexAxis:"y",plugins:{legend:{display:false}},scales:{x:{ticks:{callback:$$}}}}});
+chart("d",{type:"bar",data:{labels:["0–30","31–60","61–90","90+ days"],datasets:[{label:"Receivables",data:[.66,.2,.09,.05].map(s=>ar*s),backgroundColor:[PAL[1],PAL[0],PAL[4],"#c23b3b"]}]},options:{plugins:{legend:{display:false}},scales:{y:{ticks:{callback:$$}}}}})}
+function pipeline(x){const k=x.rev/12e5||1;return[["Qualification",4.2e6],["Needs analysis",3.1e6],["Proposal",2.2e6],["Negotiation",1.4e6]].map(([s,v])=>[s,v*k*.9])}
+function sales(x){const{C,cur,rev,prev,P}=x,deals=C.length,pd=P.length,mon=by(C,r=>r.m),lost=Math.round(deals*.62),wr=deals/(deals+lost),leads=Math.round((deals+lost)*5.2),conv=deals/leads,
+cu=by(C,r=>r.customer),pr=by(C,r=>r.product),rp=by(C,r=>r.rep),top=Object.entries(cu).map(([k,a])=>[k,sum(a,r=>r.revenue),a.length]).sort((a,b)=>b[1]-a[1]).slice(0,6),
+tg=x.tgt()*cur.length/Object.keys(rp).length,pCust=new Set(P.map(r=>r.customer)),cCust=new Set(C.map(r=>r.customer)),ret=pCust.size?[...pCust].filter(c=>cCust.has(c)).length/pCust.size:0,nw=[...cCust].filter(c=>!pCust.has(c)).length;
+$("#view").innerHTML=`<div class="grid">${kpi("Leads (modelled)",leads.toLocaleString(),leads,pd?pd*6.4:null)}${kpi("Won opportunities",deals,deals,pd)}${kpi("Win rate",pc(wr),wr,null)}${kpi("Lead conversion",pc(conv),conv,null)}${kpi("New customers",nw,nw,null)}${kpi("Customer retention",pc(ret),ret,null)}</div>
+<div class="grid"><div class="card c6"><h3>Won vs lost opportunities</h3><div class="cv"><canvas id="a"></canvas></div></div>
+<div class="card c6"><h3>Revenue by product</h3><div class="cv"><canvas id="b"></canvas></div></div>
+<div class="card c6"><h3>Top customers</h3><table><tr><th>Customer</th><th class="n">Deals</th><th class="n">Revenue</th></tr>${top.map(t=>`<tr><td>${esc(t[0])}</td><td class="n">${t[2]}</td><td class="n">${$$(t[1])}</td></tr>`).join("")}</table></div>
+<div class="card c6"><h3>Sales rep attainment vs target</h3><table>${Object.entries(rp).map(([k,a])=>[k,sum(a,r=>r.revenue)]).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<tr><td>${esc(k)}</td><td style="width:45%"><div class="bar"><i style="width:${Math.min(100,v/tg*100)}%"></i></div></td><td class="n">${pc(v/tg)}</td></tr>`).join("")}</table></div></div>
+<details><summary>Metric definitions</summary><p><b>Win rate</b> = won ÷ (won + lost). <b>Lead conversion</b> = won ÷ leads. <b>Retention</b> = prior-period customers who bought again ÷ prior-period customers. Lost opportunities and leads are modelled in demo mode; a Salesforce adapter supplies real stage history.</p></details>`;
+chart("a",{type:"bar",data:{labels:cur,datasets:[{label:"Won",data:cur.map(m=>(mon[m]||[]).length),backgroundColor:PAL[0]},{label:"Lost",data:cur.map(m=>Math.round((mon[m]||[]).length*.62)),backgroundColor:PAL[1]}]}});
+chart("b",{type:"doughnut",data:{labels:Object.keys(pr),datasets:[{data:Object.values(pr).map(a=>sum(a,r=>r.revenue)),backgroundColor:PAL}]},options:{plugins:{legend:{position:"bottom"}}}})}
+function conn(){$("#view").innerHTML=`<div class="grid"><div class="card c4"><h3>Salesforce CRM</h3><span class="pill">Not connected</span><p>Adapter interface is defined; OAuth and data retrieval are not implemented or tested.</p></div>
+<div class="card c4"><h3>SAP ERP</h3><span class="pill">Not connected</span><p>Depends on your landscape (S/4HANA, ECC, OData or RFC). Needs scoping.</p></div>
+<div class="card c4"><h3>CSV import</h3><span class="pill up">Active</span><p>Use the Import CSV button. Required columns:</p><p><code>date, region, product, customer, rep, revenue, cogs</code></p></div></div>
+<div class="card"><h3>What a real connection needs</h3><p><b>Salesforce:</b> a Connected App with OAuth 2.0 (JWT bearer or web-server flow), a read-only integration user, API access to Opportunity, Lead, Account and User objects.</p><p><b>SAP:</b> a technical user with read-only authorizations, a released OData or CDS view for billing, GL and open items, and network access via SAP Cloud Connector or a gateway.</p><p><b>Both:</b> credentials live in a server-side secrets store, never in browser code. A backend service syncs data into a per-client isolated store, and role-based access is enforced there.</p></div>`}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function render(){charts.forEach(c=>c.destroy());charts=[];
+$("#title").textContent={exec:"Executive overview",sales:"Salesforce sales analytics",conn:"Data connections"}[S.page];
+document.querySelectorAll("aside button[data-p]").forEach(b=>b.classList.toggle("on",b.dataset.p==S.page));
+$("#src").innerHTML=(S.src=="demo"?"<b>Demo mode:</b> all figures are synthetic and for illustration only. No live Salesforce or SAP connection.":"<b>Imported file:</b> "+esc(S.src)+". Not a live connection.")+(S.err?`<div class="err">${esc(S.err)}</div>`:"");
+const regs=[...new Set(S.rows.map(r=>r.region))].sort();$("#reg").innerHTML=["All",...regs].map(r=>`<option ${r==S.reg?"selected":""} value="${esc(r)}">${r=="All"?"All regions":esc(r)}</option>`).join("");
+if(S.page=="conn")return conn();
+const x=calc();if(!x.C.length){$("#view").innerHTML='<div class="card">No data for this selection. Change the period or region, or import a CSV.</div>';return}
+S.page=="exec"?exec(x):sales(x)}
+document.querySelectorAll("aside button[data-p]").forEach(b=>b.onclick=()=>{S.page=b.dataset.p;render()});
+$("#per").onchange=e=>{S.per=+e.target.value;render()};$("#reg").onchange=e=>{S.reg=e.target.value;render()};
+$("#reset").onclick=load;
+$("#csv").onchange=async e=>{const f=e.target.files[0];if(!f)return;const fd=new FormData();fd.append("file",f);try{const r=await fetch("/api/import",{method:"POST",body:fd}),d=await r.json();if(!r.ok)throw new Error(d.detail);S.rows=adapt(d);S.src=f.name;S.err="";S.reg="All"}catch(x){S.err="Import failed: "+x.message}e.target.value="";render()};
+matchMedia("(prefers-color-scheme:dark)").addEventListener("change",render);
+load();
+</script></body></html>

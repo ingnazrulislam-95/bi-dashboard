@@ -1,0 +1,6 @@
+date,region,product,customer,rep,revenue,cogs
+2026-07-05,EMEA,Core Platform,Northwind,A. Novak,12000,5000
+2026-07-19,North America,Services,Acme Retail,B. Okafor,8000,5400
+2026-08-02,APAC,Analytics Add-on,Helix Bio,E. Tanaka,6500,2800
+2026-08-21,EMEA,Support Plan,Orion Freight,C. Lindqvist,4200,1700
+2026-09-10,LATAM,Core Platform,Blue Harbor,F. Alvarez,15000,6200
